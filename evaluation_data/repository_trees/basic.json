@@ -1,0 +1,130 @@
+{
+  "name": "Repository tree normalization",
+  "cases": [
+    {
+      "key": "nested",
+      "input": {
+        "entries": [
+          {
+            "path": "README.md",
+            "type": "blob",
+            "mode": "100644",
+            "sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "size": 10
+          },
+          {
+            "path": "src",
+            "type": "tree",
+            "mode": "040000",
+            "sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          },
+          {
+            "path": "src/main.py",
+            "type": "blob",
+            "mode": "100644",
+            "sha": "cccccccccccccccccccccccccccccccccccccccc",
+            "size": 10
+          },
+          {
+            "path": "src/util",
+            "type": "tree",
+            "mode": "040000",
+            "sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          },
+          {
+            "path": "src/util/helpers.py",
+            "type": "blob",
+            "mode": "100644",
+            "sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "size": 10
+          }
+        ]
+      },
+      "expected": {
+        "paths": [
+          "README.md",
+          "src",
+          "src/main.py",
+          "src/util",
+          "src/util/helpers.py"
+        ],
+        "skipped": 0
+      }
+    },
+    {
+      "key": "unsafe_paths_skipped",
+      "input": {
+        "entries": [
+          {
+            "path": "ok.txt",
+            "type": "blob",
+            "mode": "100644",
+            "sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "size": 10
+          },
+          {
+            "path": "../evil",
+            "type": "blob",
+            "mode": "100644",
+            "sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "size": 10
+          },
+          {
+            "path": ".git/config",
+            "type": "blob",
+            "mode": "100644",
+            "sha": "cccccccccccccccccccccccccccccccccccccccc",
+            "size": 10
+          },
+          {
+            "path": "a//b",
+            "type": "blob",
+            "mode": "100644",
+            "sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "size": 10
+          }
+        ]
+      },
+      "expected": {
+        "paths": [
+          "ok.txt"
+        ],
+        "skipped": 3
+      }
+    },
+    {
+      "key": "symlink_and_submodule",
+      "input": {
+        "entries": [
+          {
+            "path": "link",
+            "type": "blob",
+            "mode": "120000",
+            "sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          },
+          {
+            "path": "vendor/lib",
+            "type": "commit",
+            "mode": "160000",
+            "sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          },
+          {
+            "path": "a.py",
+            "type": "blob",
+            "mode": "100644",
+            "sha": "cccccccccccccccccccccccccccccccccccccccc",
+            "size": 10
+          }
+        ]
+      },
+      "expected": {
+        "kinds": {
+          "link": "symlink",
+          "vendor/lib": "submodule",
+          "a.py": "file"
+        },
+        "skipped": 0
+      }
+    }
+  ]
+}

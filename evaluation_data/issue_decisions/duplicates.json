@@ -1,0 +1,110 @@
+{
+  "name": "Issue duplicate detection and body assembly",
+  "cases": [
+    {
+      "key": "duplicate_found",
+      "input": {
+        "summary": "The function evaluates untrusted input.",
+        "impact": "Remote code execution is possible.",
+        "file_path": "app.py",
+        "html_url": "https://github.com/o/r",
+        "commit_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "title": "Unsafe eval of user input in run()",
+        "findings": [
+          {
+            "title": "Use of eval on user input",
+            "severity": "high",
+            "category": "security",
+            "confidence": 0.9,
+            "description": "eval executes arbitrary code.",
+            "start_line": 2,
+            "end_line": 2,
+            "evidence": "result = eval(user_input)"
+          }
+        ],
+        "existing_issues": [
+          {
+            "number": 4,
+            "title": "Unsafe eval of user input in run()",
+            "url": "https://github.com/o/r/issues/4"
+          }
+        ]
+      },
+      "expected": {
+        "duplicate": true,
+        "body_contains": [
+          "result = eval(user_input)",
+          "#L2-L2",
+          "approved by a human"
+        ]
+      }
+    },
+    {
+      "key": "no_duplicate",
+      "input": {
+        "summary": "The function evaluates untrusted input.",
+        "impact": "Remote code execution is possible.",
+        "file_path": "app.py",
+        "html_url": "https://github.com/o/r",
+        "commit_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "title": "Unsafe eval of user input in run()",
+        "findings": [
+          {
+            "title": "Use of eval on user input",
+            "severity": "high",
+            "category": "security",
+            "confidence": 0.9,
+            "description": "eval executes arbitrary code.",
+            "start_line": 2,
+            "end_line": 2,
+            "evidence": "result = eval(user_input)"
+          }
+        ],
+        "existing_issues": [
+          {
+            "number": 9,
+            "title": "Update README badges",
+            "url": "https://github.com/o/r/issues/9"
+          }
+        ]
+      },
+      "expected": {
+        "duplicate": false,
+        "body_contains": [
+          "Findings",
+          "app.py"
+        ]
+      }
+    },
+    {
+      "key": "backticks_fenced_safely",
+      "input": {
+        "summary": "The function evaluates untrusted input.",
+        "impact": "Remote code execution is possible.",
+        "file_path": "app.py",
+        "html_url": "https://github.com/o/r",
+        "commit_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "title": "Template string breaks formatting",
+        "findings": [
+          {
+            "title": "Use of eval on user input",
+            "severity": "high",
+            "category": "security",
+            "confidence": 0.9,
+            "description": "eval executes arbitrary code.",
+            "start_line": 2,
+            "end_line": 2,
+            "evidence": "x = ```code```"
+          }
+        ],
+        "existing_issues": []
+      },
+      "expected": {
+        "duplicate": false,
+        "body_contains": [
+          "````"
+        ]
+      }
+    }
+  ]
+}

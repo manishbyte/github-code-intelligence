@@ -1,0 +1,88 @@
+{
+  "name": "Patch validation",
+  "cases": [
+    {
+      "key": "valid_change",
+      "input": {
+        "path": "m.py",
+        "original": "a = 1\nb = 2\n",
+        "diff": "--- a/m.py\n+++ b/m.py\n@@ -1,2 +1,2 @@\n a = 1\n-b = 2\n+b = 3\n"
+      },
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "key": "context_mismatch",
+      "input": {
+        "path": "m.py",
+        "original": "a = 1\nb = 2\n",
+        "diff": "--- a/m.py\n+++ b/m.py\n@@ -1,2 +1,2 @@\n a = 9\n-b = 2\n+b = 3\n"
+      },
+      "expected": {
+        "valid": false,
+        "reason_contains": "does not match"
+      }
+    },
+    {
+      "key": "other_file",
+      "input": {
+        "path": "m.py",
+        "original": "a = 1\nb = 2\n",
+        "diff": "--- a/other.py\n+++ b/other.py\n@@ -1 +1 @@\n-a\n+b\n"
+      },
+      "expected": {
+        "valid": false,
+        "reason_contains": "outside the approved scope"
+      }
+    },
+    {
+      "key": "adds_secret",
+      "input": {
+        "path": "m.py",
+        "original": "a = 1\nb = 2\n",
+        "diff": "--- a/m.py\n+++ b/m.py\n@@ -1,2 +1,2 @@\n a = 1\n-b = 2\n+b = 'ghp_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'\n"
+      },
+      "expected": {
+        "valid": false,
+        "reason_contains": "secret"
+      }
+    },
+    {
+      "key": "rename_rejected",
+      "input": {
+        "path": "m.py",
+        "original": "a = 1\nb = 2\n",
+        "diff": "rename from m.py\nrename to n.py\n--- a/m.py\n+++ b/m.py\n@@ -1 +1 @@\n-a = 1\n+a = 2\n"
+      },
+      "expected": {
+        "valid": false,
+        "reason_contains": "unsupported"
+      }
+    },
+    {
+      "key": "file_creation_rejected",
+      "input": {
+        "path": "m.py",
+        "original": "a = 1\nb = 2\n",
+        "diff": "--- /dev/null\n+++ b/m.py\n@@ -0,0 +1 @@\n+x\n"
+      },
+      "expected": {
+        "valid": false,
+        "reason_contains": "creating or deleting"
+      }
+    },
+    {
+      "key": "workflow_path_rejected",
+      "input": {
+        "path": ".github/workflows/ci.yml",
+        "original": "a = 1\nb = 2\n",
+        "diff": "--- a/.github/workflows/ci.yml\n+++ b/.github/workflows/ci.yml\n@@ -1 +1 @@\n-a = 1\n+a = 2\n"
+      },
+      "expected": {
+        "valid": false,
+        "reason_contains": "not permitted"
+      }
+    }
+  ]
+}

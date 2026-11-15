@@ -1,0 +1,63 @@
+# Development stack: PostgreSQL, migrations, API, background worker, frontend.
+# Usage: cp .env.example .env  (fill in secrets) && docker compose up --build
+name: github-code-intelligence
+
+x-backend: &backend
+  build: ./backend
+  env_file: .env
+  environment:
+    DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-gci}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-github_intelligence}
+    EVALUATION_DATA_DIR: /evaluation_data
+  volumes:
+    - ./evaluation_data:/evaluation_data:ro
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-gci}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-github_intelligence}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-gci} -d ${POSTGRES_DB:-github_intelligence}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    <<: *backend
+    command: ["alembic", "upgrade", "head"]
+    restart: "no"
+
+  backend:
+    <<: *backend
+    ports:
+      - "8008:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  worker:
+    <<: *backend
+    command: ["python", "-m", "app.workers.queue"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  frontend:
+    build: ./frontend
+    environment:
+      API_BASE_URL: http://backend:8000
+      FRONTEND_BASE_URL: ${FRONTEND_BASE_URL:-http://localhost:8501}
+    ports:
+      - "8502:8501"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
